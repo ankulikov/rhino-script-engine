@@ -39,7 +39,10 @@ public class InterfaceImplementor {
 
     private Invocable engine;
 
-    /** Creates a new instance of Invocable */
+    /** Creates a new instance of Invocable
+     * @param engine implementation of Script Engine
+     */
+
     public InterfaceImplementor(Invocable engine) {
         this.engine = engine;
     }
@@ -62,13 +65,11 @@ public class InterfaceImplementor {
             Object result;
             final Method m = method;
             final Object[] a = args;
-            result = AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
-                public Object run() throws Exception {
-                    if (thiz == null) {
-                        return engine.invokeFunction(m.getName(), a);
-                    } else {
-                        return engine.invokeMethod(thiz, m.getName(), a);
-                    }
+            result = AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+                if (thiz == null) {
+                    return engine.invokeFunction(m.getName(), a);
+                } else {
+                    return engine.invokeMethod(thiz, m.getName(), a);
                 }
             }, accCtxt);
             // give chance to convert the method result

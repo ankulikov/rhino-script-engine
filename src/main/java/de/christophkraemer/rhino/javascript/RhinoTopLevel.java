@@ -71,13 +71,20 @@ public final class RhinoTopLevel extends ImporterTopLevel {
      * The bindings function takes a JavaScript scope object
      * of type ExternalScriptable and returns the underlying Bindings
      * instance.
-     * <p/>
-     * var page = scope(pageBindings);
-     * with (page) {
-     * // code that uses page scope
-     * }
-     * var b = bindings(page);
-     * // operate on bindings here.
+     * <br>
+     * <code>
+     * var page = scope(pageBindings);<br>
+     * with (page) {<br>
+     * // code that uses page scope<br>
+     * }<br>
+     * var b = bindings(page);<br>
+     * // operate on bindings here.<br>
+     * </code>
+     * @param cx Rhino context
+     * @param thisObj object bound to the function
+     * @param args arguments
+     * @param funObj is not used
+     * @return underlying Bindings instance.
      */
     public static Object bindings(Context cx, Scriptable thisObj, Object[] args,
                                   Function funObj) {
@@ -103,11 +110,18 @@ public final class RhinoTopLevel extends ImporterTopLevel {
      * For example, in webapp scenario, a 'page' level Bindings instance
      * may be wrapped as a scope and code can be run in JavaScripe 'with'
      * statement:
-     * <p/>
-     * var page = scope(pageBindings);
-     * with (page) {
-     * // code that uses page scope
-     * }
+     * <br>
+     * <code>
+     * var page = scope(pageBindings);<br>
+     * with (page) {<br>
+     * // code that uses page scope<br>
+     * }<br>
+     * </code>
+     *  @param cx Rhino context
+     * @param thisObj object bound to the function
+     * @param args arguments
+     * @param funObj is not used
+     * @return instance of {@link Scriptable} or undefined value.
      */
     public static Object scope(Context cx, Scriptable thisObj, Object[] args,
                                Function funObj) {
@@ -133,18 +147,27 @@ public final class RhinoTopLevel extends ImporterTopLevel {
      * of a Java synchronized method) from an existing function. The
      * new function synchronizes on the <code>this</code> object of
      * its invocation.
-     * js> var o = { f : sync(function(x) {
-     * print("entry");
-     * Packages.java.lang.Thread.sleep(x*1000);
-     * print("exit");
-     * })};
-     * js> thread(function() {o.f(5);});
-     * entry
-     * js> thread(function() {o.f(5);});
-     * js>
-     * exit
-     * entry
-     * exit
+     * <br>
+     * <code>
+     * {@literal js>} var o = { f : sync(function(x) {<br>
+     * print("entry");<br>
+     * Packages.java.lang.Thread.sleep(x*1000);<br>
+     * print("exit");<br>
+     * })};<br>
+     * {@literal js>} thread(function() {o.f(5);});<br>
+     * entry<br>
+     * {@literal js>} thread(function() {o.f(5);});<br>
+     * {@literal js>}<br>
+     * exit<br>
+     * entry<br>
+     * exit<br>
+     * </code>
+     *
+     * @param cx Rhino context
+     * @param thisObj object bound to the function
+     * @param args arguments
+     * @param funObj is not used
+     * @return instance of {@link Synchronizer}
      */
     public static Object sync(Context cx, Scriptable thisObj, Object[] args,
                               Function funObj) {
