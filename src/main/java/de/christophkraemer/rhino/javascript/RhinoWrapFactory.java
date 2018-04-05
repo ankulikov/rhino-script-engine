@@ -116,7 +116,7 @@ final class RhinoWrapFactory extends WrapFactory {
             } else {
                 // dynamicType is always a class type and never an interface.
                 // find an accessible super class of the dynamic type.
-                while (dynamicType != null) {
+                while (true) {
                     dynamicType = dynamicType.getSuperclass();
                     name = dynamicType.getName();
                     if (classShutter.visibleToScripts(name)) {
@@ -124,7 +124,7 @@ final class RhinoWrapFactory extends WrapFactory {
                         break;
                     }
                 }
-                // atleast java.lang.Object has to be accessible. So, when
+                // at least java.lang.Object has to be accessible. So, when
                 // we reach here, type variable should not be null.
                 assert type != null :
                         "even java.lang.Object is not accessible?";

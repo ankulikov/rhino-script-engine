@@ -48,62 +48,9 @@ import java.util.Map;
         implements Invocable, Compilable {
 
     private static final boolean DEBUG = false;
-    private static final int languageVersion = getLanguageVersion();
-    private static final int optimizationLevel = getOptimizationLevel();
 
-    static {
-        ContextFactory.initGlobal(new ContextFactory() {
-            /**
-             * Create new Context instance to be associated with the current thread.
-             */
-            @Override
-            protected Context makeContext() {
-                Context cx = super.makeContext();
-                cx.setLanguageVersion(languageVersion);
-                cx.setOptimizationLevel(optimizationLevel);
-                cx.setClassShutter(RhinoClassShutter.getInstance());
-                cx.setWrapFactory(RhinoWrapFactory.getInstance());
-                return cx;
-            }
+    private ContextFactory contextFactory = new DefaultContextFactory();
 
-            /**
-             * Execute top call to script or function. When the runtime is about to
-             * execute a script or function that will create the first stack frame
-             * with scriptable code, it calls this method to perform the real call.
-             * In this way execution of any script happens inside this function.
-             */
-            @Override
-            protected Object doTopCall(final Callable callable,
-                                       final Context cx, final Scriptable scope,
-                                       final Scriptable thisObj, final Object[] args) {
-                AccessControlContext accCtxt = null;
-                Scriptable global = ScriptableObject.getTopLevelScope(scope);
-                Scriptable globalProto = global.getPrototype();
-                if (globalProto instanceof RhinoTopLevel) {
-                    accCtxt = ((RhinoTopLevel) globalProto).getAccessContext();
-                }
-
-                if (accCtxt != null) {
-                    return AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                        public Object run() {
-                            return superDoTopCall(callable, cx, scope, thisObj, args);
-                        }
-                    }, accCtxt);
-                } else {
-                    return superDoTopCall(callable, cx, scope, thisObj, args);
-                }
-            }
-
-            private Object superDoTopCall(Callable callable,
-                                          Context cx, Scriptable scope,
-                                          Scriptable thisObj, Object[] args) {
-                return super.doTopCall(callable, cx, scope, thisObj, args);
-            }
-        });
-    }
-
-    private static final String RHINO_JS_VERSION = "rhino.js.version";
-    private static final String RHINO_OPT_LEVEL = "rhino.opt.level";
     private static final String printSource =
             "function print(str, newline) {                \n" +
                     "    if (typeof(str) == 'undefined') {         \n" +
@@ -152,10 +99,10 @@ import java.util.Map;
         try {
             topLevel = new RhinoTopLevel(cx, this);
         } finally {
-            cx.exit();
+            Context.exit();
         }
 
-        indexedProps = new HashMap<Object, Object>();
+        indexedProps = new HashMap<>();
 
         //construct object used to implement getInterface
         implementor = new InterfaceImplementor(this) {
@@ -163,7 +110,7 @@ import java.util.Map;
                 Context cx = enterContext();
                 try {
                     if (thiz != null && !(thiz instanceof Scriptable)) {
-                        thiz = cx.toObject(thiz, topLevel);
+                        thiz = Context.toObject(thiz, topLevel);
                     }
                     Scriptable engineScope = getRuntimeScope(context);
                     Scriptable localScope = (thiz != null) ? (Scriptable) thiz :
@@ -180,7 +127,7 @@ import java.util.Map;
                     }
                     return true;
                 } finally {
-                    cx.exit();
+                    Context.exit();
                 }
             }
 
@@ -196,31 +143,11 @@ import java.util.Map;
         };
     }
 
-    private static int getLanguageVersion() {
-        int version;
-        String tmp = AccessController.doPrivileged(
-                new sun.security.action.GetPropertyAction(RHINO_JS_VERSION));
-        if (tmp != null) {
-            version = Integer.parseInt((String) tmp);
-        } else {
-            version = Context.VERSION_1_8;
-        }
-        return version;
-    }
-
-    private static int getOptimizationLevel() {
-        int optLevel = -1;
-        // disable optimizer under security manager, for now.
-        if (System.getSecurityManager() == null) {
-            optLevel = Integer.getInteger(RHINO_OPT_LEVEL, -1);
-        }
-        return optLevel;
-    }
-
-    static Context enterContext() {
+    private Context enterContext() {
         // call this always so that initializer of this class runs
         // and initializes custom wrap factory and class shutter.
-        return Context.enter();
+        return contextFactory.enterContext();
+
     }
 
     public Object eval(Reader reader, ScriptContext ctxt)
@@ -249,17 +176,17 @@ import java.util.Map;
         } catch (IOException ee) {
             throw new ScriptException(ee);
         } finally {
-            cx.exit();
+            Context.exit();
         }
 
         return unwrapReturnValue(ret);
     }
 
-    public Object eval(String script, ScriptContext ctxt) throws ScriptException {
+    public Object eval(String script, ScriptContext context) throws ScriptException {
         if (script == null) {
             throw new NullPointerException("null script");
         }
-        return eval(new StringReader(script), ctxt);
+        return eval(new StringReader(script), context);
     }
 
     public ScriptEngineFactory getFactory() {
@@ -297,7 +224,7 @@ import java.util.Map;
             }
 
             if (thiz != null && !(thiz instanceof Scriptable)) {
-                thiz = cx.toObject(thiz, topLevel);
+                thiz = Context.toObject(thiz, topLevel);
             }
 
             Scriptable engineScope = getRuntimeScope(context);
@@ -323,7 +250,7 @@ import java.util.Map;
             se.initCause(re);
             throw se;
         } finally {
-            cx.exit();
+            Context.exit();
         }
     }
 
@@ -367,7 +294,7 @@ import java.util.Map;
         try {
             cx.evaluateString(newScope, printSource, "print", 1, null);
         } finally {
-            cx.exit();
+            Context.exit();
         }
         return newScope;
     }
@@ -381,7 +308,7 @@ import java.util.Map;
     //package-private helpers
 
     public CompiledScript compile(Reader script) throws ScriptException {
-        CompiledScript ret = null;
+        CompiledScript ret;
         Context cx = enterContext();
 
         try {
@@ -397,7 +324,7 @@ import java.util.Map;
             if (DEBUG) e.printStackTrace();
             throw new ScriptException(e);
         } finally {
-            cx.exit();
+            Context.exit();
         }
         return ret;
     }
@@ -427,5 +354,9 @@ import java.util.Map;
         }
 
         return result instanceof Undefined ? null : result;
+    }
+
+    public void setContextFactory(ContextFactory contextFactory) {
+        this.contextFactory = contextFactory;
     }
 }
