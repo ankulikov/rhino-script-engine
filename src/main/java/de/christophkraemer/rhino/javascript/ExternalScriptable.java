@@ -67,15 +67,14 @@ final class ExternalScriptable implements Scriptable {
     private Scriptable prototype;
     // my parent scope, if any
     private Scriptable parent;
+    private RhinoScriptEngine rhinoScriptEngine;
 
-    ExternalScriptable(ScriptContext context) {
-        this(context, new HashMap<Object, Object>());
-    }
 
-    ExternalScriptable(ScriptContext context, Map<Object, Object> indexedProps) {
+    ExternalScriptable(ScriptContext context, Map<Object, Object> indexedProps, RhinoScriptEngine rhinoScriptEngine) {
         if (context == null) {
             throw new NullPointerException("context is null");
         }
+        this.rhinoScriptEngine = rhinoScriptEngine;
         this.context = context;
         this.indexedProps = indexedProps;
     }
@@ -372,7 +371,7 @@ final class ExternalScriptable implements Scriptable {
             if (!(v instanceof Function))
                 continue;
             Function fun = (Function) v;
-            Context cx = RhinoScriptEngine.enterContext();
+            Context cx = rhinoScriptEngine.enterContext();
             try {
                 v = fun.call(cx, fun.getParentScope(), this, args);
             } finally {

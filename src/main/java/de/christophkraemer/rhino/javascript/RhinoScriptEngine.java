@@ -143,11 +143,10 @@ import java.util.Map;
         };
     }
 
-    private Context enterContext() {
+     Context enterContext() {
         // call this always so that initializer of this class runs
         // and initializes custom wrap factory and class shutter.
         return contextFactory.enterContext();
-
     }
 
     public Object eval(Reader reader, ScriptContext ctxt)
@@ -280,7 +279,7 @@ import java.util.Map;
         }
 
         // we create a scope for the given ScriptContext
-        Scriptable newScope = new ExternalScriptable(ctxt, indexedProps);
+        Scriptable newScope = new ExternalScriptable(ctxt, indexedProps, this);
 
         // Set the prototype of newScope to be 'topLevel' so that
         // JavaScript standard objects are visible from the scope.

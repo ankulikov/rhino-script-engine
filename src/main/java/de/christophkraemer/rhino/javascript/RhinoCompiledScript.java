@@ -52,7 +52,7 @@ import javax.script.ScriptException;
     public Object eval(ScriptContext context) throws ScriptException {
 
         Object result = null;
-        Context cx = RhinoScriptEngine.enterContext();
+        Context cx = engine.enterContext();
         try {
 
             Scriptable scope = engine.getRuntimeScope(context);

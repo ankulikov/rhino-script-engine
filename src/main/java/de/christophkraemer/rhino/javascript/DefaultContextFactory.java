@@ -8,7 +8,7 @@ import java.security.PrivilegedAction;
 
 /**
  * @author Andrey Kulikov (ankulikov)
- * @date 05.04.2018
+ * date 05.04.2018
  */
 public class DefaultContextFactory extends ContextFactory {
 
