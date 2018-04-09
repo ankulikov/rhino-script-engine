@@ -6,7 +6,7 @@
 
     <groupId>de.christophkraemer</groupId>
     <artifactId>rhino-script-engine</artifactId>
-    <version>1.1.2-java8</version>
+    <version>1.1.2-java8-SNAPSHOT</version>
 
     <name>RhinoScriptEngine</name>
     <description>
