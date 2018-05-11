@@ -116,7 +116,7 @@ final class ExternalScriptable implements Scriptable {
                 int scope = context.getAttributesScope(name);
                 if (scope != -1) {
                     Object value = context.getAttribute(name, scope);
-                    if(value.getClass().getPackage().getName().startsWith(RHINO_JS_PACKAGE_NAME)){
+                    if (value.getClass().getName().startsWith(RHINO_JS_PACKAGE_NAME)) {
                     	return value;
                     }else{
                         return Context.javaToJS(value, this);
