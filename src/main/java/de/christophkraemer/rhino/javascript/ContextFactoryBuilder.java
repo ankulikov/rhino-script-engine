@@ -54,14 +54,13 @@ public class ContextFactoryBuilder {
             this.languageVersion = languageVersion;
         }
 
+
         @Override
-        protected Context makeContext() {
-            Context cx = super.makeContext();
-            cx.setLanguageVersion(languageVersion);
-            cx.setOptimizationLevel(optimizationLevel);
-            cx.setClassShutter(classShutter);
-            cx.setWrapFactory(wrapFactory);
-            return cx;
+        protected void initContext(Context context) {
+            context.setLanguageVersion(languageVersion);
+            context.setOptimizationLevel(optimizationLevel);
+            context.setClassShutter(classShutter);
+            context.setWrapFactory(wrapFactory);
         }
     }
 }

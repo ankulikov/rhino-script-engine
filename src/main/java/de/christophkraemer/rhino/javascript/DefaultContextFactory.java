@@ -44,11 +44,15 @@ public class DefaultContextFactory extends ContextFactory {
     @Override
     protected Context makeContext() {
         Context cx = super.makeContext();
-        cx.setLanguageVersion(DefaultContextFactory.languageVersion);
-        cx.setOptimizationLevel(DefaultContextFactory.optimizationLevel);
-        cx.setClassShutter(RhinoClassShutter.getInstance());
-        cx.setWrapFactory(RhinoWrapFactory.getInstance());
+        initContext(cx);
         return cx;
+    }
+
+    protected void initContext(Context context) {
+        context.setLanguageVersion(DefaultContextFactory.languageVersion);
+        context.setOptimizationLevel(DefaultContextFactory.optimizationLevel);
+        context.setClassShutter(RhinoClassShutter.getInstance());
+        context.setWrapFactory(RhinoWrapFactory.getInstance());
     }
 
     /**
